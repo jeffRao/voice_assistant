@@ -1,0 +1,49 @@
+# 项目配置文件
+server:
+  host: "0.0.0.0"
+  port: 8000
+
+# ASR配置
+asr:
+  models:
+    sensevoice:
+      model_path: "pretrain_models/SenseVoiceSmall"
+      language: "auto"
+    funasr:
+      model_path: "pretrain_models/funasr_paraformer"
+      language: "zh"
+
+# 大模型配置
+llm:
+  api_key: "your_api_key"
+  base_url: "https://api.moonshot.cn/v1"
+  model: "moonshot-v1-8k"
+  temperature: 0.7
+  max_tokens: 2000
+  stream: true
+
+# TTS配置
+tts:
+  models:
+    edgetts:
+      voice: "zh-CN-XiaoxiaoNeural"
+      rate: "+0%"
+      volume: "+0%"
+    cosyvoice:
+      model_path: "pretrain_models/CosyVoice-300M"
+      speaker: "default"
+
+# 音频配置
+audio:
+  sample_rate: 16000
+  channels: 1
+  chunk_size: 1024
+  format: "wav"
+
+# 输出配置
+output:
+  dir: "output"
+  audio_format: "wav"
+
+# 句子分割符号
+sentence_delimiters: ["。", "！", "？", ".", "!", "?"]

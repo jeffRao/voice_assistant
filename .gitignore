@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 输出文件
+output/
+*.wav
+*.mp3
+
+# 模型文件
+pretrain_models/
+
+# 配置文件（如果包含敏感信息）
+# config.yaml
+
+# 日志
+*.log
+
+# 操作系统
+.DS_Store
+Thumbs.db

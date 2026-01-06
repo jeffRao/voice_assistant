@@ -1,0 +1,38 @@
+# 语音助手项目依赖
+
+# Web框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+websockets==12.0
+
+# 配置文件解析
+pyyaml==6.0.1
+
+# ASR相关
+funasr==1.3.0
+modelscope==1.33.0
+torch==2.3.1
+torchaudio==2.3.1
+
+# 大模型调用
+openai==1.3.5
+
+# TTS相关
+edge-tts==7.2.7
+
+# 音频处理
+pyaudio==0.2.14
+pygame==2.5.2
+
+# 工具库
+numpy==1.26.4
+matplotlib==3.7.5
+
+# cosyvoice dependences
+pyarrow==18.1.0
+HyperPyYAML==1.2.2
+onnxruntime==1.18.0; sys_platform == 'darwin' or sys_platform == 'win32'
+openai-whisper==20231117
+inflect==7.3.1
+transformers==4.51.3
