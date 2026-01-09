@@ -21,7 +21,7 @@ import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pad_sequence, unpad_sequence
+from torch.nn.utils.rnn import pad_sequence
 from cosyvoice.utils.common import IGNORE_ID
 from cosyvoice.transformer.label_smoothing_loss import LabelSmoothingLoss
 from cosyvoice.utils.common import th_accuracy
@@ -86,9 +86,16 @@ class TransformerLM(torch.nn.Module):
         encoder_out = self.text_encoder_affine_layer(encoder_out)
         return encoder_out, encoder_out_lens
 
+    def unpad_sequence(self, padded, lengths, batch_first=False):
+        # padded: [B, T, ...] if batch_first else [T, B, ...]
+        # lengths: 长度列表/张量，长度=B
+        if not batch_first:
+            padded = padded.transpose(0, 1)  # 先统一成 [B, T, ...]
+        return [padded[i, :l] for i, l in enumerate(lengths)]
+
     def pad_unpad_sequence(self, sos_emb, embedding, text_token, text_token_len, task_id_emb, speech_token, speech_token_len):
-        text_token = unpad_sequence(text_token, text_token_len.cpu(), batch_first=True)
-        speech_token = unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
+        text_token = self.unpad_sequence(text_token, text_token_len.cpu(), batch_first=True)
+        speech_token = self.unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
         lm_input = [torch.concat([sos_emb.squeeze(dim=0), embedding[i], text_token[i], task_id_emb.squeeze(dim=0), speech_token[i]], dim=0)
                     for i in range(len(text_token))]
         lm_input_len = torch.tensor([i.size(0) for i in lm_input], dtype=torch.int32)
@@ -303,14 +310,14 @@ class Qwen2LM(TransformerLM):
 
     def prepare_lm_input_target(self, sos_emb, text_token, text_token_emb, text_token_len, task_id_emb, speech_token, speech_token_emb, speech_token_len, instruct_token=None, instruct_token_emb=None, instruct_token_len=None):
         lm_target, lm_input = [], []
-        text_token = unpad_sequence(text_token, text_token_len.cpu(), batch_first=True)
-        speech_token = unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
-        text_token_emb = unpad_sequence(text_token_emb, text_token_len.cpu(), batch_first=True)
-        speech_token_emb = unpad_sequence(speech_token_emb, speech_token_len.cpu(), batch_first=True)
+        text_token = self.unpad_sequence(text_token, text_token_len.cpu(), batch_first=True)
+        speech_token = self.unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
+        text_token_emb = self.unpad_sequence(text_token_emb, text_token_len.cpu(), batch_first=True)
+        speech_token_emb = self.unpad_sequence(speech_token_emb, speech_token_len.cpu(), batch_first=True)
         # NOTE add instruct_token in CosyVoice3
         if instruct_token is not None and instruct_token_emb is not None and instruct_token_len is not None:
-            instruct_token = unpad_sequence(instruct_token, instruct_token_len.cpu(), batch_first=True)
-            instruct_token_emb = unpad_sequence(instruct_token_emb, instruct_token_len.cpu(), batch_first=True)
+            instruct_token = self.unpad_sequence(instruct_token, instruct_token_len.cpu(), batch_first=True)
+            instruct_token_emb = self.unpad_sequence(instruct_token_emb, instruct_token_len.cpu(), batch_first=True)
         for i in range(len(text_token)):
             # bistream sequence
             if random.random() < 0.5 and speech_token_len[i] / text_token_len[i] > self.mix_ratio[1] / self.mix_ratio[0]:
@@ -406,8 +413,8 @@ class Qwen2LM(TransformerLM):
         task_id_emb = self.llm_embedding.weight[self.task_id].reshape(1, 1, -1)
 
         # 2. encode speech_token
-        speech_token = unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
-        reject_speech_token = unpad_sequence(reject_speech_token, reject_speech_token_len.cpu(), batch_first=True)
+        speech_token = self.unpad_sequence(speech_token, speech_token_len.cpu(), batch_first=True)
+        reject_speech_token = self.unpad_sequence(reject_speech_token, reject_speech_token_len.cpu(), batch_first=True)
         speech_token_combined = speech_token + reject_speech_token
         speech_token_combined = pad_sequence(speech_token_combined, batch_first=True, padding_value=0)
         speech_token_combined_len = torch.concat([speech_token_len, reject_speech_token_len], dim=0)

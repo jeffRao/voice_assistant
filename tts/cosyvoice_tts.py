@@ -14,6 +14,7 @@ class CosyVoiceTTS(BaseTTS):
     def __init__(
         self,
         model_path: str,
+        prompt_text: str,
         speaker: str = "default",
         device: str = "cpu",
         **kwargs
@@ -22,6 +23,7 @@ class CosyVoiceTTS(BaseTTS):
         self.model_path = Path(model_path)
         self.speaker = speaker
         self.device = device
+        self.prompt_text = prompt_text
         self.model = None
         self.load_model()
     
@@ -47,6 +49,7 @@ class CosyVoiceTTS(BaseTTS):
     
     def synthesize_sync(self, text: str, output_path: str) -> bool:
         """同步语音合成"""
+        print(f"开始合成: {text}")
         if self.model is None:
             print("CosyVoice模型未加载")
             return False
@@ -57,12 +60,14 @@ class CosyVoiceTTS(BaseTTS):
             import torchaudio
             
             # 使用zero-shot模式
-            for i, j in enumerate(self.model.inference_zero_shot(text, "", self.speaker)):
+            for i, j in enumerate(self.model.inference_zero_shot(text, self.prompt_text, self.speaker)):
                 # j是audio tensor
                 if i == 0:  # 只取第一个结果
+                    print(f"合成成功，保存音频: {text}， 音频文件：{output_path}")
                     torchaudio.save(output_path, j['tts_speech'], 22050)
                     break
-            
+
+            print(f"合成结束: {text}")
             return True
             
         except Exception as e:

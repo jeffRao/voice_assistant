@@ -31,7 +31,8 @@ tts:
       volume: "+0%"
     cosyvoice:
       model_path: "pretrain_models/CosyVoice-300M"
-      speaker: "default"
+      speaker: "asset/zero_shot_prompt.wav"
+      prompt_text: "希望你以后能够做的比我还好呦。"
 
 # 音频配置
 audio:
